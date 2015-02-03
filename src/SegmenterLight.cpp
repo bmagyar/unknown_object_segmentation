@@ -171,6 +171,8 @@ namespace segment
   pcl::PointCloud<pcl::PointXYZRGBL>::Ptr
   SegmenterLight::processPointCloud (pcl::PointCloud<pcl::PointXYZRGB>::Ptr &pcl_cloud)
   {
+    double ticksBefore;
+
     surface::View view;
     view.width = pcl_cloud->width;
     view.height = pcl_cloud->height;
@@ -179,6 +181,7 @@ namespace segment
     pcl::copyPointCloud (*pcl_cloud, *result);
 
     // calcuate normals
+    printf("Calculate normals\n"); ticksBefore = cv::getTickCount();
     view.normals.reset (new pcl::PointCloud<pcl::Normal>);
     surface::ZAdaptiveNormals::Parameter za_param;
     za_param.adaptive = true;
@@ -186,8 +189,10 @@ namespace segment
     nor.setInputCloud (pcl_cloud);
     nor.compute ();
     nor.getNormals (view.normals);
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
 
     // adaptive clustering
+    printf("Adaptive clustering \n"); ticksBefore = cv::getTickCount();
     surface::ClusterNormalsToPlanes::Parameter param;
     param.adaptive = true;
     if(detail == 1) {
@@ -202,8 +207,10 @@ namespace segment
     clusterNormals.setView (&view);
     clusterNormals.setPixelCheck (true, 5);
     clusterNormals.compute ();
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
 
     // model abstraction
+    printf("Model abstraction: %d \n", fast); ticksBefore = cv::getTickCount();
     if(!fast) {
       pcl::on_nurbs::SequentialFitter::Parameter nurbsParams;
       nurbsParams.order = 3;
@@ -233,20 +240,26 @@ namespace segment
       surfModeling.setView (&view);
       surfModeling.compute ();
     }
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
 
     // contour detector
+    printf("Contour detector\n"); ticksBefore = cv::getTickCount();
     surface::ContourDetector contourDet;
     contourDet.setInputCloud(pcl_cloud);
     contourDet.setView(&view);
     contourDet.computeContours();
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
     
     // relations
+    printf("Relations\n"); ticksBefore = cv::getTickCount();
     surface::StructuralRelationsLight stRel;
     stRel.setInputCloud(pcl_cloud);
     stRel.setView(&view);
     stRel.computeRelations();
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
  
     // init svm model
+    printf("Init SVM model\n"); ticksBefore = cv::getTickCount();
     std::string svmStructuralModel;
     std::string svmStructuralScaling;
     if(!fast) {
@@ -256,29 +269,39 @@ namespace segment
       svmStructuralModel = "PP-Trainingsset.txt.scaled.model.fast";
       svmStructuralScaling = "param.txt.fast";
     }
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
 
     // svm classification
+    printf("SVM classification\n"); ticksBefore = cv::getTickCount();
     svm::SVMPredictorSingle svm_structural(model_path + "/" + svmStructuralModel);
     svm_structural.setScaling(true, model_path + "/" + svmStructuralScaling);
     svm_structural.classify(&view, 1);
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
     
     // graph cut
+    printf("Graphcut\n"); ticksBefore = cv::getTickCount();
     gc::GraphCut graphCut;
     #ifdef DEBUG
       graphCut.printResults(true);
     #endif
     if(graphCut.init(&view))
       graphCut.process();
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
 
     // copy results
-    for (unsigned i = 0; i < view.graphCutGroups.size (); i++)
+    printf("Copy results\n"); ticksBefore = cv::getTickCount();
+
+    printf("graphCutGroups.size(): %d \n", view.graphCutGroups.size());
+
+    for (unsigned i = 0; i < view.graphCutGroups.size(); i++)
       for (unsigned j = 0; j < view.graphCutGroups[i].size (); j++)
         view.surfaces[view.graphCutGroups[i][j]]->label = i;
-    for (unsigned i = 0; i < view.surfaces.size (); i++) {
+    for (unsigned i = 0; i < view.surfaces.size(); i++) {
       for (unsigned j = 0; j < view.surfaces[i]->indices.size (); j++) {
         result->points[view.surfaces[i]->indices[j]].label = view.surfaces[i]->label;
       }
     }
+    printf("It took: %f\n", (cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
 
     return result;
   }
