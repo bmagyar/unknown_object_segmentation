@@ -34,7 +34,7 @@ public:
     : _nh("~")
   {
 //    _sub = _nh.subscribe("cloud_in", 10, &SegmenterNode::cloudCallback, this);
-    _sub = _nh.subscribe("/camera/depth_registered/points", 10, &SegmenterNode::cloudCallback, this);
+    _sub = _nh.subscribe("/camera/depth_registered/points", 1, &SegmenterNode::cloudCallback, this);
     _pub = _nh.advertise<sensor_msgs::PointCloud2>("extrudedCloud",10);
 
 //    std::string model_path;
@@ -55,18 +55,31 @@ protected:
     pcl::PointCloud<pcl::PointXYZRGB> cloud_to_segment;
     pcl::fromROSMsg(cloud, cloud_to_segment);
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_to_segment_ptr(&cloud_to_segment);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_to_segment_ptr(
+                new pcl::PointCloud<pcl::PointXYZRGB>(cloud_to_segment));
 
     // and now, MAGIC!!
+    ROS_CYAN_STREAM("Now calling processPointCloud");
     pcl::PointCloud<pcl::PointXYZRGBL>::Ptr labeled_cloud_ptr =
             segmenter->processPointCloud(cloud_to_segment_ptr);
 
-    ROS_YELLOW_STREAM(labeled_cloud_ptr->size());
+    pcl::io::savePCDFileASCII("test_pcd.pcd", *labeled_cloud_ptr);
 
+    if(_pub.getNumSubscribers())
+    {
+        if(labeled_cloud_ptr->empty())
+        {
+            ROS_PINK_STREAM("Labeled cloud is empty, won't publish.");
+            return;
+        }
+        ROS_YELLOW_STREAM("Publish segmented cloud...");
+        sensor_msgs::PointCloud2 cloud_out;
+        cloud_out.header.frame_id = cloud.header.frame_id;
+        pcl::toROSMsg(*labeled_cloud_ptr, cloud_out);
+        _pub.publish(cloud_out);
+    }
 
-//    if(_pub.getNumSubscribers() && !extrudedCloud.data.empty())
-//      _pub.publish(extrudedCloud);
-    ROS_INFO_STREAM("Callback runtime (ms): " <<
+    ROS_INFO_STREAM("Callback runtime (s): " <<
                     ros::Duration(ros::Time::now() - timeStart));
   }
 
