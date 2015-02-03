@@ -40,15 +40,11 @@ namespace segment
   /* --------------- SegmenterLight --------------- */
 
   SegmenterLight::SegmenterLight (std::string _model_path)
-  {
-    model_path = _model_path;
-    useStructuralLevel = true;
-    detail = 2;
-  }
-
-  SegmenterLight::~SegmenterLight ()
-  {
-  }
+    : useStructuralLevel(true)
+    , fast(true)
+    , model_path(_model_path)
+    , detail(2)
+  {}
 
   void
   SegmenterLight::computeNormals (pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud_in,

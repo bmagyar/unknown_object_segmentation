@@ -59,12 +59,7 @@ namespace segment
     int detail;                 ///< Degree of detail for pre-segmenter
 
   public:
-
-  private:
-
-  public:
     SegmenterLight (std::string _model_path = "model/");
-    ~SegmenterLight ();
 
     void
     computeNormals (pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud_in,
