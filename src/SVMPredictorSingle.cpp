@@ -233,6 +233,15 @@ void SVMPredictorSingle::setScaling(bool _scale, std::string filename)
 void SVMPredictorSingle::scaleValues(std::vector<double> &val)
 {
   std::vector<double> scaled_val;
+  //    printf("feature_max.size: %d  feature_min.size: %d val.size: %d\n",
+  //       feature_max.size(), feature_min.size(), val.size());
+  // if feature_max and feature_min are not prepared, skip
+  if(val.size() != feature_max.size() || val.size() != feature_min.size())
+  {
+      printf("[SVMPredictorSingle::scaleValues] Warning: feature_max.size() != feature_min.size() != val.size()");
+      return;
+  }
+
   for(unsigned index=0; index<val.size(); index++)
   {
     double value = val[index];
