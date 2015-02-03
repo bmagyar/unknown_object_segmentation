@@ -48,6 +48,7 @@ public:
   class Parameter
   {
     public:
+      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
       double radius;            // euclidean inlier radius
       int kernel;               // kernel radius [px]
       bool adaptive;            // Activate z-adaptive normals calcualation
@@ -80,8 +81,6 @@ private:
   inline short X(int idx);
   inline short Y(int idx);
 
-
-
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -97,10 +96,7 @@ public:
   void getNormals(pcl::PointCloud<pcl::Normal>::Ptr &_normals);
 };
 
-
-
-
-/*********************** INLINE METHODES **************************/
+/*********************** INLINE METHODS **************************/
 
 inline int ZAdaptiveNormals::GetIdx(short x, short y)
 {

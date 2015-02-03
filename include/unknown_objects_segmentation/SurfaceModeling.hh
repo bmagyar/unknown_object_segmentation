@@ -67,6 +67,7 @@ public:
   class Parameter
   {
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     pcl::on_nurbs::SequentialFitter::Parameter nurbsParams;
 
     double sigmaError;        // error for gausian error model
@@ -161,7 +162,7 @@ public:
 
 
 
-/*********************** INLINE METHODES **************************/
+/*********************** INLINE METHODS **************************/
 inline bool CmpSavings(const merge &i, const merge &j)
 {
   return (i.savings > j.savings);

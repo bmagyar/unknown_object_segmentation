@@ -42,6 +42,8 @@
   #include "v4r/TomGine/tgRenderModel.h"
 #endif
 
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector3d)
+EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Eigen::Vector2d)
 
 namespace surface
 {
@@ -75,6 +77,7 @@ struct Edge {
 class SurfaceModel
 {
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     int idx;                                            ///< for merging in surface modeling
     int type;                                           ///< type of surface model (plane, NURBS, (same than pcl::SACMODEL))
     int label;                                          ///< object assignment label
@@ -88,13 +91,15 @@ class SurfaceModel
     std::vector<int> indices;                           ///< index list for 2D data
     std::vector<double> error;                          ///< error of each point
     std::vector<double> probs;                          ///< probability of each points
-    std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > normals;
+    //std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > normals;
+    std::vector<Eigen::Vector3d> normals;
 
     std::vector<float> coeffs;                          ///< model coefficients
     std::vector<unsigned> neighbors2D;                  ///< 2D neighbors of patch (not related to idx => related with view->surfaces[i])
     std::vector<unsigned> neighbors2DNrPixel;           ///< Number of neighboring pixels for 2D neighbors
     std::vector<unsigned> neighbors3D;                  ///< 3D neighbors of patch (not related to idx=> related with view->surfaces[i])
-    std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > nurbs_params;
+    //std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > nurbs_params;
+    std::vector<Eigen::Vector2d> nurbs_params;
 
     std::vector< std::vector<int> > contours;           ///< ordered boundary contours (for all contours)
     std::vector<Edge*> edges;                           ///< Boundary graph: Reference to edges
@@ -167,10 +172,11 @@ class SurfaceModel
     }
 };
 
-
 /** View **/
-class View{
+class View
+{
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   unsigned width;
   unsigned height;
   Eigen::Matrix3d intrinsic;
