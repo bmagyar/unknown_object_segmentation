@@ -5,6 +5,11 @@
   <description>The unknown_objects_segmentation package</description>
   <maintainer email="bence.magyar@pal-robotics.com">Bence Magyar</maintainer>
   <license>GNU GPL</license>
+  <url type="website">http://www.acin.tuwien.ac.at/?id=316</url>
+  <author email="moerwald@acin.tuwien.ac.at">Thomas Mörwald</author>
+  <author email="arichtsfeld@acin.tuwien.ac.at">Andreas Richtsfeld</author>
+  <author email="prankl@acin.tuwien.ac.at">Johann Prankl</author>
+  <author email="bence.magyar@pal-robotics.com">Bence Magyar</author>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>roscpp</build_depend>
